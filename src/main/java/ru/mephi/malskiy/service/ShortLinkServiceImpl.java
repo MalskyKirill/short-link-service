@@ -55,6 +55,20 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
     }
 
+    @Override
+    public String followShortLink(String shortLink) {
+        if (shortLink == null || shortLink.isBlank()) {
+            throw new IllegalArgumentException("короткая ссылка не должена быть пустой");
+        }
+
+        Link link = shortLinksMap.get(shortLink);
+        if (link == null) {
+            throw new IllegalArgumentException("ссылка не найдена или удалена: " + shortLink);
+        }
+
+        return link.getBaseLink();
+    }
+
     private String generateShortLinkCode(UUID userId, String baseLink, int salt) {
         String comp = userId + "|" + baseLink + "|" + salt; // собираем строку из 3 частей
         UUID name = UUID.nameUUIDFromBytes(comp.getBytes(StandardCharsets.UTF_8)); // создаем UUID из байтов строки

@@ -4,6 +4,8 @@ import ru.mephi.malskiy.service.ShortLinkService;
 import ru.mephi.malskiy.service.ShortLinkServiceImpl;
 import ru.mephi.malskiy.service.UserService;
 
+import java.awt.*;
+import java.net.URI;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -20,8 +22,10 @@ public class ShortLinkApp {
             System.out.println("Выберите действие:");
             System.out.println("""
                     1) Создать короткую ссылку
+                    2) Перейти по короткой ссылке
                     0) Выход
                     """);
+            System.out.print("-> ");
 
             String cmd = scanner.nextLine().trim();
 
@@ -42,6 +46,15 @@ public class ShortLinkApp {
                         String shortUrl = shortLinkService.getShortLink(userId, baseUrl, maxClick);
                         System.out.println("Короткая ссылка: " + shortUrl);
                         System.out.println("Время жизни ссылки 24 часа");
+                    }
+                    case "2" -> {
+                        System.out.print("Введите короткую ссылку: ");
+                        String shortLink = scanner.nextLine().trim();
+
+                        String baseUrl = shortLinkService.followShortLink(shortLink);
+                        System.out.println("Открываю в браузере: " + baseUrl);
+
+                        Desktop.getDesktop().browse(new URI(baseUrl));
                     }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");

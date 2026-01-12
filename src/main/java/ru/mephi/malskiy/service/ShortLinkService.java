@@ -4,4 +4,6 @@ import java.util.UUID;
 
 public interface ShortLinkService {
     String getShortLink(UUID userId, String baseLink, int maxClick);
+
+    String followShortLink(String shortLink);
 }
