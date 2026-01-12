@@ -1,8 +1,6 @@
 package ru.mephi.malskiy;
 
-import ru.mephi.malskiy.service.ShortLinkService;
-import ru.mephi.malskiy.service.ShortLinkServiceImpl;
-import ru.mephi.malskiy.service.UserService;
+import ru.mephi.malskiy.service.*;
 
 import java.awt.*;
 import java.net.URI;
@@ -11,7 +9,8 @@ import java.util.UUID;
 
 public class ShortLinkApp {
     public static void main(String[] args) {
-        ShortLinkService shortLinkService = new ShortLinkServiceImpl();
+        NotificationService notificationService = new NotificationServiceImpl();
+        ShortLinkService shortLinkService = new ShortLinkServiceImpl(notificationService);
         UserService userService = new UserService();
 
         UUID userId = null;
@@ -23,6 +22,7 @@ public class ShortLinkApp {
             System.out.println("""
                     1) Создать короткую ссылку
                     2) Перейти по короткой ссылке
+                    3) Показать уведомления
                     0) Выход
                     """);
             System.out.print("-> ");
@@ -55,6 +55,14 @@ public class ShortLinkApp {
                         System.out.println("Открываю в браузере: " + baseUrl);
 
                         Desktop.getDesktop().browse(new URI(baseUrl));
+                    }
+                    case "3" -> {
+                        var notes = notificationService.pullMessage(userId);
+                        if (notes.isEmpty()) {
+                            System.out.println("Уведомлений нет");
+                        } else {
+                            notes.forEach(n -> System.out.println("- " + n));
+                        }
                     }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");

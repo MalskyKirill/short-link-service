@@ -18,6 +18,13 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     private final Map<String, Link> shortLinksMap = new HashMap<>();
     private final Map<UserLinkKey, Link> userLinksMap = new HashMap<>();
 
+    private final NotificationService notificationService;
+
+    public ShortLinkServiceImpl(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
+
     @Override
     public String getShortLink(UUID userId, String baseLink, int maxClick) {
         // проверяем валидность переданных аргументов
@@ -66,7 +73,21 @@ public class ShortLinkServiceImpl implements ShortLinkService{
             throw new IllegalArgumentException("ссылка не найдена или удалена: " + shortLink);
         }
 
+        boolean isCanFollow = link.tryRegisterClick();
+        if (!isCanFollow) {
+            notifyLimitOnce(link);
+            throw new IllegalStateException("Лимит переходов исчерпан: " + shortLink);
+        }
+
         return link.getBaseLink();
+    }
+
+    private void notifyLimitOnce(Link link) {
+        if (!link.isLimitNotified()) {
+            link.setLimitNotified(true);
+            notificationService.notify(link.getUserId(),
+                "Лимит переходов исчерпан (" + link.getMaxClick() + "): " + link.getShortLink());
+        }
     }
 
     private String generateShortLinkCode(UUID userId, String baseLink, int salt) {
