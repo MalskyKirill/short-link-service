@@ -22,6 +22,6 @@ public class LinkUtil {
             copyValue = divRem[0]; // присваеваем copyValue значение частного
         }
 
-        return code.reverse().toString(); // делаем ревер, переводим в строку и возвращаем
+        return code.reverse().toString(); // делаем реверc так ка собирали в обратном порядке, переводим в строку и возвращаем
     }
 }
