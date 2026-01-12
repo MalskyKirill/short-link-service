@@ -30,6 +30,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         Link existingLink = userLinksMap.get(key);
 
         if (existingLink != null) { // если создавал
+            System.out.println("Ссылка по такому адресу вами была уже создана");
             return existingLink.getShortLink(); // возвращаем короткую ссылку
         }
 
@@ -38,7 +39,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
         while (true) { // крутимся в цикле
             String code = generateShortLinkCode(userId, baseLink, salt); // генерируем код
-            shortLink = DOMAIN + salt; // получаем короткую ссылку
+            shortLink = DOMAIN + code; // получаем короткую ссылку
 
             if (!shortLinksMap.containsKey(shortLink)) break; // если получили уникальное значение вываливаемся
             salt++; // при колизии подсаливаем
