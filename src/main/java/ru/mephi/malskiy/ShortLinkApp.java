@@ -1,9 +1,12 @@
 package ru.mephi.malskiy;
 
+import ru.mephi.malskiy.model.Link;
 import ru.mephi.malskiy.service.*;
 
-import java.awt.*;
+
+import java.awt.Desktop;
 import java.net.URI;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -23,6 +26,8 @@ public class ShortLinkApp {
                     1) Создать короткую ссылку
                     2) Перейти по короткой ссылке
                     3) Показать уведомления
+                    4) Показать мои ссылки
+                    5) Удалить ссылку
                     0) Выход
                     """);
             System.out.print("-> ");
@@ -59,10 +64,24 @@ public class ShortLinkApp {
                     case "3" -> {
                         var notes = notificationService.pullMessage(userId);
                         if (notes.isEmpty()) {
-                            System.out.println("Уведомлений нет");
+                            System.out.println("Уведомлений нет.");
                         } else {
                             notes.forEach(n -> System.out.println("- " + n));
                         }
+                    }
+                    case "4" -> {
+                        List<Link> links = shortLinkService.getUserLinks(userId);
+                        if (links.isEmpty()) {
+                            System.out.println("У вас нет ссылок.");
+                        } else {
+                            links.forEach(System.out::println);
+                        }
+                    }
+                    case "5" -> {
+                        System.out.print("Введите короткую ссылку для удаления: ");
+                        String shortLink = scanner.nextLine().trim();
+                        shortLinkService.deleteShortLink(userId, shortLink);
+                        System.out.println("Ссылка удалена.");
                     }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");

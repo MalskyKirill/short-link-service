@@ -62,7 +62,7 @@ public class Link {
         return true;
     }
 
-    public boolean isLimitNotified() {
+    public boolean isLimitNotified() { // достигнут лимит перехода
         return limitNotified;
     }
 

@@ -7,9 +7,7 @@ import ru.mephi.malskiy.util.LinkUtil;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ShortLinkServiceImpl implements ShortLinkService{
     private static final String DOMAIN = "click.ru/"; // базовый url
@@ -64,27 +62,59 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
     @Override
     public String followShortLink(String shortLink) {
-        if (shortLink == null || shortLink.isBlank()) {
-            throw new IllegalArgumentException("короткая ссылка не должена быть пустой");
+        if (shortLink == null || shortLink.isBlank()) { // проверяем на валидность
+            throw new IllegalArgumentException("Короткая ссылка не должена быть пустой");
         }
 
-        Link link = shortLinksMap.get(shortLink);
+        Link link = shortLinksMap.get(shortLink); // берем ссылку
         if (link == null) {
-            throw new IllegalArgumentException("ссылка не найдена или удалена: " + shortLink);
+            throw new IllegalArgumentException("Ссылка не найдена или удалена: " + shortLink);
         }
 
-        boolean isCanFollow = link.tryRegisterClick();
-        if (!isCanFollow) {
-            notifyLimitOnce(link);
+        boolean isCanFollow = link.tryRegisterClick(); // проверяем можем ли мы перейти
+        if (!isCanFollow) { // если не можем
+            notifyLimit(link); // уведомляем пользователя
             throw new IllegalStateException("Лимит переходов исчерпан: " + shortLink);
         }
 
         return link.getBaseLink();
     }
 
-    private void notifyLimitOnce(Link link) {
-        if (!link.isLimitNotified()) {
-            link.setLimitNotified(true);
+    @Override
+    public List<Link> getUserLinks(UUID userId) {
+        List<Link> userLinks = new ArrayList<>(); // создаем списочек
+
+        for (Link link : shortLinksMap.values()) { // бежим по линкам в мапе
+            if (link.getUserId().equals(userId)) userLinks.add(link); // если у линки пользователь совпадает с текущем, добавляем в списочек
+        }
+
+        userLinks.sort(Comparator.comparing(Link::getCreatedAt).reversed()); // сортируем сначала самые свежие
+        return userLinks;
+    }
+
+    @Override
+    public void deleteShortLink(UUID userId, String shortLink) {
+        Link link = shortLinksMap.get(shortLink);
+        if (link == null) {
+            throw new IllegalArgumentException("Ссылка не найдена или удалена: " + shortLink);
+        }
+
+        if (!link.getUserId().equals(userId)) {
+            throw new SecurityException("Нельзя удалить ссылку другого пользователя");
+        }
+
+        removeLink(link);
+    }
+
+    private void removeLink(Link link) {
+        shortLinksMap.remove(link.getShortLink());
+        userLinksMap.remove(new UserLinkKey(link.getUserId(), link.getBaseLink()));
+    }
+
+    private void notifyLimit(Link link) {
+        if (!link.isLimitNotified()) { // проверяем что мы еще не писали уведомление по данной ссылке
+            link.setLimitNotified(true); // выставляем флаг
+            // пишем уведомление пользователю
             notificationService.notify(link.getUserId(),
                 "Лимит переходов исчерпан (" + link.getMaxClick() + "): " + link.getShortLink());
         }
