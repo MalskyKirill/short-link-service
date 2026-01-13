@@ -13,4 +13,6 @@ public interface ShortLinkService {
     List<Link> getUserLinks(UUID userId);
 
     void deleteShortLink(UUID userId, String shortLink);
+
+    void updateMaxClicks(UUID userId, String shortLink, int newLimit);
 }

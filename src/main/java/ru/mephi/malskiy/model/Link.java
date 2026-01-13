@@ -9,8 +9,13 @@ public class Link {
     private final String baseLink;
     private final LocalDateTime createdAt;
     private final LocalDateTime expiresAt;
-    private final int maxClick;
+    private int maxClick;
     private int clicks;
+
+    public void setMaxClick(int maxClick) {
+        this.maxClick = maxClick;
+    }
+
     private boolean limitNotified = false;
 
     public Link(UUID userId, String shortLink, String baseLink, LocalDateTime createdAt, LocalDateTime expiresAt, int maxClick) {

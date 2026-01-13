@@ -23,8 +23,9 @@ public class ShortLinkApp {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
+            System.out.println();
             System.out.println("Выберите действие:");
-            System.out.println("""
+            System.out.print("""
                     1) Создать короткую ссылку
                     2) Перейти по короткой ссылке
                     3) Показать уведомления
@@ -32,6 +33,7 @@ public class ShortLinkApp {
                     5) Удалить ссылку
                     6) Сменить пользователя (ввести UUID вручную)
                     7) Показать текущий UUID
+                    8) Изменить лимит переходов по моей ссылке
                     0) Выход
                     """);
             System.out.print("-> ");
@@ -66,6 +68,7 @@ public class ShortLinkApp {
                         Desktop.getDesktop().browse(new URI(baseUrl));
                     }
                     case "3" -> {
+                        if (requireUser(userId)) break;
                         var notes = notificationService.pullMessage(userId);
                         if (notes.isEmpty()) {
                             System.out.println("Уведомлений нет.");
@@ -74,6 +77,7 @@ public class ShortLinkApp {
                         }
                     }
                     case "4" -> {
+                        if (requireUser(userId)) break;
                         List<Link> links = shortLinkService.getUserLinks(userId);
                         if (links.isEmpty()) {
                             System.out.println("У вас нет ссылок.");
@@ -82,6 +86,7 @@ public class ShortLinkApp {
                         }
                     }
                     case "5" -> {
+                        if (requireUser(userId)) break;
                         System.out.print("Введите короткую ссылку для удаления: ");
                         String shortLink = scanner.nextLine().trim();
                         shortLinkService.deleteShortLink(userId, shortLink);
@@ -100,6 +105,18 @@ public class ShortLinkApp {
                         if (userId == null) System.out.println("UUID ещё не создан.");
                         else System.out.println("Текущий UUID: " + userId);
                     }
+                    case "8" -> {
+                        if (requireUser(userId)) break;
+
+                        System.out.print("Введите короткую ссылку: ");
+                        String shortLink = scanner.nextLine().trim();
+
+                        System.out.print("Введите новый лимит: ");
+                        int newLimit = Integer.parseInt(scanner.nextLine().trim());
+
+                        shortLinkService.updateMaxClicks(userId, shortLink, newLimit);
+                        System.out.println("Лимит обновлён.");
+                    }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");
                         return;
@@ -111,5 +128,13 @@ public class ShortLinkApp {
                 System.out.println("Ошибка: " + e.getMessage());
             }
         }
+    }
+
+    private static boolean requireUser(UUID userId) {
+        if (userId == null) {
+            System.out.println("Сначала создайте короткую ссылку, чтобы получить UUID или введите его ручками.");
+            return true;
+        }
+        return false;
     }
 }

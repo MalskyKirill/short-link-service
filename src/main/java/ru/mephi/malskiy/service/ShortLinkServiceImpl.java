@@ -117,6 +117,33 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         removeLink(link);
     }
 
+    @Override
+    public void updateMaxClicks(UUID userId, String shortLink, int newLimit) {
+        if (newLimit <= 0) throw new IllegalArgumentException("newMaxClicks должен быть > 0");
+        deleteExpired();
+
+        Link link = shortLinksMap.get(shortLink);
+        if (link == null) {
+            throw new IllegalArgumentException("Ссылка не найдена или удалена: " + shortLink);
+        }
+
+        if (!link.getUserId().equals(userId)) {
+            throw new SecurityException("Нельзя редактировать ссылку другого пользователя");
+        }
+
+        if (newLimit < link.getClicks()) {
+            throw new IllegalArgumentException("Новый лимит меньше текущих кликов (" + link.getClicks() + ")");
+        }
+
+        link.setMaxClick(newLimit);
+
+        if (link.isLimitNotified()) { // если после изменения лимит уже достигнут — уведомим
+            notifyLimit(link);
+        } else { // если лимит увеличили — можно разрешить новое уведомление
+            link.setLimitNotified(false);
+        }
+    }
+
     private void deleteExpired() {
         LocalDateTime now = LocalDateTime.now();
         List<Link> links = new ArrayList<>(shortLinksMap.values()); // делаем копию линков
