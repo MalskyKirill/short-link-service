@@ -11,7 +11,7 @@ import java.util.*;
 
 public class ShortLinkServiceImpl implements ShortLinkService{
     private static final String DOMAIN = "click.ru/"; // базовый url
-    private static final Duration DEFAULT_TTL = Duration.ofHours(24); // time to live ссылки
+    private static final Duration DEFAULT_TTL = Duration.ofSeconds(24); // time to live ссылки
 
     private final Map<String, Link> shortLinksMap = new HashMap<>();
     private final Map<UserLinkKey, Link> userLinksMap = new HashMap<>();
@@ -29,6 +29,8 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         if (userId == null) throw new IllegalArgumentException("userId не должен быть null");
         if (baseLink == null || baseLink.isBlank()) throw new IllegalArgumentException("baseLink не должен быть пустым");
         if (maxClick <= 0) throw new IllegalArgumentException("maxClick должно быть больше 0");
+
+        deleteExpired();
 
         // проверяем создавал ли пользователь короткую ссылку с этого url
         UserLinkKey key = new UserLinkKey(userId, baseLink);
@@ -66,6 +68,8 @@ public class ShortLinkServiceImpl implements ShortLinkService{
             throw new IllegalArgumentException("Короткая ссылка не должена быть пустой");
         }
 
+        deleteExpired();
+
         Link link = shortLinksMap.get(shortLink); // берем ссылку
         if (link == null) {
             throw new IllegalArgumentException("Ссылка не найдена или удалена: " + shortLink);
@@ -82,6 +86,8 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
     @Override
     public List<Link> getUserLinks(UUID userId) {
+        deleteExpired();
+
         List<Link> userLinks = new ArrayList<>(); // создаем списочек
 
         for (Link link : shortLinksMap.values()) { // бежим по линкам в мапе
@@ -94,6 +100,8 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
     @Override
     public void deleteShortLink(UUID userId, String shortLink) {
+        deleteExpired();
+
         Link link = shortLinksMap.get(shortLink);
         if (link == null) {
             throw new IllegalArgumentException("Ссылка не найдена или удалена: " + shortLink);
@@ -104,6 +112,19 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         }
 
         removeLink(link);
+    }
+
+    private void deleteExpired() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Link> links = new ArrayList<>(shortLinksMap.values()); // делаем копию линков
+
+        for (Link link : links) { // бежим по копии
+            if (link.isExpired(now)) {
+                removeLink(link);
+                notificationService.notify(link.getUserId(),
+                    "Ссылка протухла и удалена: " + link.getShortLink());
+            }
+        }
     }
 
     private void removeLink(Link link) {
