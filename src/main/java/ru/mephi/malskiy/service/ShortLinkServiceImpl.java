@@ -6,8 +6,9 @@ import ru.mephi.malskiy.model.Link;
 import ru.mephi.malskiy.model.UserLinkKey;
 import ru.mephi.malskiy.util.LinkUtil;
 
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -32,6 +33,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         if (maxClick <= 0) throw new IllegalArgumentException("maxClick должно быть больше 0");
 
         deleteExpired();
+        validateUrl(baseLink);
 
         // проверяем создавал ли пользователь короткую ссылку с этого url
         UserLinkKey key = new UserLinkKey(userId, baseLink);
@@ -152,5 +154,19 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         if (base62.length() > 8) base62.substring(0, 8); // если код длиннее 8 символов обрезаем
 
         return base62;
+    }
+
+    private void validateUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            if (uri.getScheme() == null || (!uri.getScheme().equalsIgnoreCase("http") && !uri.getScheme().equalsIgnoreCase("https"))) {
+                throw new IllegalArgumentException("URL должен начинаться с http:// или https://");
+            }
+            if (uri.getHost() == null) {
+                throw new IllegalArgumentException("URL должен содержать host (например example.com)");
+            }
+        } catch (IllegalArgumentException | URISyntaxException ex) {
+            throw new IllegalArgumentException("Невалидный URL: " + url);
+        }
     }
 }
