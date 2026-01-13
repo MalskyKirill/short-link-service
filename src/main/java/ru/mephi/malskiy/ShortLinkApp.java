@@ -1,5 +1,6 @@
 package ru.mephi.malskiy;
 
+import ru.mephi.malskiy.config.AppConfig;
 import ru.mephi.malskiy.model.Link;
 import ru.mephi.malskiy.service.*;
 
@@ -12,8 +13,9 @@ import java.util.UUID;
 
 public class ShortLinkApp {
     public static void main(String[] args) {
+        AppConfig config = AppConfig.load();
         NotificationService notificationService = new NotificationServiceImpl();
-        ShortLinkService shortLinkService = new ShortLinkServiceImpl(notificationService);
+        ShortLinkService shortLinkService = new ShortLinkServiceImpl(config, notificationService);
         UserService userService = new UserService();
 
         UUID userId = null;

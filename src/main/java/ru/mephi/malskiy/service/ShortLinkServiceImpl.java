@@ -1,5 +1,7 @@
 package ru.mephi.malskiy.service;
 
+
+import ru.mephi.malskiy.config.AppConfig;
 import ru.mephi.malskiy.model.Link;
 import ru.mephi.malskiy.model.UserLinkKey;
 import ru.mephi.malskiy.util.LinkUtil;
@@ -10,15 +12,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class ShortLinkServiceImpl implements ShortLinkService{
-    private static final String DOMAIN = "click.ru/"; // базовый url
-    private static final Duration DEFAULT_TTL = Duration.ofSeconds(24); // time to live ссылки
-
+    private final AppConfig config;
     private final Map<String, Link> shortLinksMap = new HashMap<>();
     private final Map<UserLinkKey, Link> userLinksMap = new HashMap<>();
 
     private final NotificationService notificationService;
 
-    public ShortLinkServiceImpl(NotificationService notificationService) {
+    public ShortLinkServiceImpl(AppConfig config, NotificationService notificationService) {
+        this.config = config;
         this.notificationService = notificationService;
     }
 
@@ -46,13 +47,13 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
         while (true) { // крутимся в цикле
             String code = generateShortLinkCode(userId, baseLink, salt); // генерируем код
-            shortLink = DOMAIN + code; // получаем короткую ссылку
+            shortLink = config.getDomain() + code; // получаем короткую ссылку
 
             if (!shortLinksMap.containsKey(shortLink)) break; // если получили уникальное значение вываливаемся
             salt++; // при колизии подсаливаем
         }
 
-        LocalDateTime expiresAt = LocalDateTime.now().plus(DEFAULT_TTL);
+        LocalDateTime expiresAt = LocalDateTime.now().plus(config.getTtl());
         Link link = new Link(userId, shortLink, baseLink, LocalDateTime.now(), expiresAt, maxClick);
 
         shortLinksMap.put(shortLink, link);
