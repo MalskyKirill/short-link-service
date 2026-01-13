@@ -51,8 +51,11 @@ public class ShortLinkApp {
                         System.out.print("Введите URL: ");
                         String baseUrl = scanner.nextLine().trim();
 
-                        System.out.print("Введите лимит переходов: ");
-                        int maxClick = Integer.parseInt(scanner.nextLine().trim());
+                        System.out.print("Введите лимит переходов (Enter для " + config.getDefaultMaxClick() + "): ");
+                        String maxClickRaw = scanner.nextLine().trim();
+                        int maxClick = maxClickRaw.isEmpty()
+                            ? config.getDefaultMaxClick()
+                            : Integer.parseInt(maxClickRaw);
 
                         String shortUrl = shortLinkService.getShortLink(userId, baseUrl, maxClick);
                         System.out.println("Короткая ссылка: " + shortUrl);

@@ -84,6 +84,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
             throw new IllegalStateException("Лимит переходов исчерпан: " + shortLink);
         }
 
+        System.out.println("переходов осталось " + (link.getMaxClick() - link.getClicks()));
         return link.getBaseLink();
     }
 

@@ -9,6 +9,7 @@ import static java.lang.Long.parseLong;
 public class AppConfig {
     private final String domain;
     private final Duration ttl;
+    private final int defaultMaxClick;
 
     public String getDomain() {
         return domain;
@@ -18,9 +19,14 @@ public class AppConfig {
         return ttl;
     }
 
-    public AppConfig(String domain, Duration ttl) {
+    public int getDefaultMaxClick() {
+        return defaultMaxClick;
+    }
+
+    public AppConfig(String domain, Duration ttl, int defaultMaxClick) {
         this.domain = domain;
         this.ttl = ttl;
+        this.defaultMaxClick = defaultMaxClick;
     }
 
     public static AppConfig load() {
@@ -34,7 +40,8 @@ public class AppConfig {
 
         String domain = prop.getProperty("domain");
         long ttl = parseLong(prop.getProperty("ttlSeconds"));
+        int defaultMaxClick = Integer.parseInt(prop.getProperty("defaultMaxClick"));
 
-        return new AppConfig(domain, Duration.ofSeconds(ttl));
+        return new AppConfig(domain, Duration.ofSeconds(ttl), defaultMaxClick);
     }
 }
