@@ -30,6 +30,8 @@ public class ShortLinkApp {
                     3) Показать уведомления
                     4) Показать мои ссылки
                     5) Удалить ссылку
+                    6) Сменить пользователя (ввести UUID вручную)
+                    7) Показать текущий UUID
                     0) Выход
                     """);
             System.out.print("-> ");
@@ -85,6 +87,19 @@ public class ShortLinkApp {
                         shortLinkService.deleteShortLink(userId, shortLink);
                         System.out.println("Ссылка удалена.");
                     }
+                    case "6" -> {
+                        System.out.print("Введите UUID (или пусто, чтобы остаться текущим): ");
+                        String s = scanner.nextLine().trim();
+                        System.out.println(s);
+                        if (!s.isEmpty()) {
+                            userId = UUID.fromString(s);
+                            System.out.println("Текущий пользователь: " + userId);
+                        }
+                    }
+                    case "7" -> {
+                        if (userId == null) System.out.println("UUID ещё не создан.");
+                        else System.out.println("Текущий UUID: " + userId);
+                    }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");
                         return;
@@ -95,7 +110,6 @@ public class ShortLinkApp {
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
             }
-
         }
     }
 }
