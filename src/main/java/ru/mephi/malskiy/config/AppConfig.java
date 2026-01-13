@@ -10,6 +10,7 @@ public class AppConfig {
     private final String domain;
     private final Duration ttl;
     private final int defaultMaxClick;
+    private final Duration cleanupInterval;
 
     public String getDomain() {
         return domain;
@@ -23,10 +24,15 @@ public class AppConfig {
         return defaultMaxClick;
     }
 
-    public AppConfig(String domain, Duration ttl, int defaultMaxClick) {
+    public Duration getCleanupInterval() {
+        return cleanupInterval;
+    }
+
+    public AppConfig(String domain, Duration ttl, int defaultMaxClick, Duration cleanupInterval) {
         this.domain = domain;
         this.ttl = ttl;
         this.defaultMaxClick = defaultMaxClick;
+        this.cleanupInterval = cleanupInterval;
     }
 
     public static AppConfig load() {
@@ -41,7 +47,8 @@ public class AppConfig {
         String domain = prop.getProperty("domain");
         long ttl = parseLong(prop.getProperty("ttlSeconds"));
         int defaultMaxClick = Integer.parseInt(prop.getProperty("defaultMaxClick"));
+        long cleanupInterval = parseLong(prop.getProperty("cleanupSeconds"));
 
-        return new AppConfig(domain, Duration.ofSeconds(ttl), defaultMaxClick);
+        return new AppConfig(domain, Duration.ofSeconds(ttl), defaultMaxClick, Duration.ofSeconds(cleanupInterval));
     }
 }

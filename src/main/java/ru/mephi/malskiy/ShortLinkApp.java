@@ -59,7 +59,18 @@ public class ShortLinkApp {
 
                         String shortUrl = shortLinkService.getShortLink(userId, baseUrl, maxClick);
                         System.out.println("Короткая ссылка: " + shortUrl);
-                        System.out.println("Время жизни ссылки 24 часа");
+                        long ttlMinutes = config.getTtl().toMinutes();
+                        if (ttlMinutes < 60) {
+                            System.out.println("Время жизни ссылки " + ttlMinutes + " мин.");
+                        } else {
+                            long hours = ttlMinutes / 60;
+                            long minutes = ttlMinutes % 60;
+                            if (minutes == 0) {
+                                System.out.println("Время жизни ссылки " + hours + " ч.");
+                            } else {
+                                System.out.println("Время жизни ссылки " + hours + " ч " + minutes + " мин.");
+                            }
+                        }
                     }
                     case "2" -> {
                         System.out.print("Введите короткую ссылку: ");
@@ -129,6 +140,9 @@ public class ShortLinkApp {
 
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
+            }
+            finally {
+                shortLinkService.shutdown();
             }
         }
     }

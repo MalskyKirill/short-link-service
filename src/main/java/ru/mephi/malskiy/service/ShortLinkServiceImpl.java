@@ -16,17 +16,32 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     private final AppConfig config;
     private final Map<String, Link> shortLinksMap = new HashMap<>();
     private final Map<UserLinkKey, Link> userLinksMap = new HashMap<>();
-
     private final NotificationService notificationService;
+    private final Timer cleanupTimer; // добавили таймер
 
     public ShortLinkServiceImpl(AppConfig config, NotificationService notificationService) {
         this.config = config;
         this.notificationService = notificationService;
+
+        this.cleanupTimer = new Timer(true); // создал таймер с демоном
+        // берем интервал из конфига но не меньше 10 с
+        long cleanupMillis = Math.max(10000L, config.getCleanupInterval().toMillis());
+
+        this.cleanupTimer.scheduleAtFixedRate(new TimerTask() { // создали задачу
+            @Override
+            public void run() { // запустили поток
+                try {
+                    deleteExpired();
+                } catch (Exception ex) {
+                    System.err.println("Не удалось выполнить очистку: " + ex.getMessage());
+                }
+            }
+        }, cleanupMillis, cleanupMillis); // задали время первого запуска и период
     }
 
 
     @Override
-    public String getShortLink(UUID userId, String baseLink, int maxClick) {
+    public synchronized String getShortLink(UUID userId, String baseLink, int maxClick) {
         // проверяем валидность переданных аргументов
         if (userId == null) throw new IllegalArgumentException("userId не должен быть null");
         if (baseLink == null || baseLink.isBlank()) throw new IllegalArgumentException("baseLink не должен быть пустым");
@@ -66,7 +81,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     }
 
     @Override
-    public String followShortLink(String shortLink) {
+    public synchronized String followShortLink(String shortLink) {
         if (shortLink == null || shortLink.isBlank()) { // проверяем на валидность
             throw new IllegalArgumentException("Короткая ссылка не должена быть пустой");
         }
@@ -89,7 +104,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     }
 
     @Override
-    public List<Link> getUserLinks(UUID userId) {
+    public synchronized List<Link> getUserLinks(UUID userId) {
         deleteExpired();
 
         List<Link> userLinks = new ArrayList<>(); // создаем списочек
@@ -103,7 +118,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     }
 
     @Override
-    public void deleteShortLink(UUID userId, String shortLink) {
+    public synchronized void deleteShortLink(UUID userId, String shortLink) {
         deleteExpired();
 
         Link link = shortLinksMap.get(shortLink);
@@ -119,7 +134,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     }
 
     @Override
-    public void updateMaxClicks(UUID userId, String shortLink, int newLimit) {
+    public synchronized void updateMaxClicks(UUID userId, String shortLink, int newLimit) {
         if (newLimit <= 0) throw new IllegalArgumentException("newMaxClicks должен быть > 0");
         deleteExpired();
 
@@ -145,7 +160,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         }
     }
 
-    private void deleteExpired() {
+    private synchronized void deleteExpired() {
         LocalDateTime now = LocalDateTime.now();
         List<Link> links = new ArrayList<>(shortLinksMap.values()); // делаем копию линков
 
@@ -158,7 +173,12 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         }
     }
 
-    private void removeLink(Link link) {
+    @Override
+    public void shutdown() {
+        cleanupTimer.cancel(); // убили таймер
+    }
+
+    private synchronized void removeLink(Link link) {
         shortLinksMap.remove(link.getShortLink());
         userLinksMap.remove(new UserLinkKey(link.getUserId(), link.getBaseLink()));
     }

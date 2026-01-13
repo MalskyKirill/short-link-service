@@ -15,4 +15,5 @@ public interface ShortLinkService {
     void deleteShortLink(UUID userId, String shortLink);
 
     void updateMaxClicks(UUID userId, String shortLink, int newLimit);
+    void shutdown();
 }
