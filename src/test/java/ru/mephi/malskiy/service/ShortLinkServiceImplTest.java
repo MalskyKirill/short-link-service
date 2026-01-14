@@ -1,14 +1,13 @@
 package ru.mephi.malskiy.service;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import ru.mephi.malskiy.config.AppConfig;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import ru.mephi.malskiy.config.AppConfig;
 
 class ShortLinkServiceImplTest {
     private ShortLinkServiceImpl service;
@@ -59,8 +58,8 @@ class ShortLinkServiceImplTest {
         String shortLink = service.getShortLink(userId, "https://example.com", 1);
 
         assertDoesNotThrow(() -> service.followShortLink(shortLink));
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-            () -> service.followShortLink(shortLink));
+        IllegalStateException exception =
+                assertThrows(IllegalStateException.class, () -> service.followShortLink(shortLink));
 
         assertTrue(exception.getMessage().contains("Лимит переходов исчерпан"));
         List<String> notifications = notificationService.pullMessage(userId);
@@ -75,8 +74,8 @@ class ShortLinkServiceImplTest {
 
         UUID userId = UUID.randomUUID();
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-            () -> service.getShortLink(userId, "ftp://example.com", 3));
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> service.getShortLink(userId, "ftp://example.com", 3));
 
         assertTrue(exception.getMessage().contains("Невалидный URL"));
     }
@@ -102,13 +101,13 @@ class ShortLinkServiceImplTest {
         String shortLink = service.getShortLink(owner, "https://example.com", 2);
 
         assertDoesNotThrow(() -> service.followShortLink(shortLink));
-        IllegalArgumentException invalidLimit = assertThrows(IllegalArgumentException.class,
-            () -> service.updateMaxClicks(owner, shortLink, 0));
+        IllegalArgumentException invalidLimit =
+                assertThrows(IllegalArgumentException.class, () -> service.updateMaxClicks(owner, shortLink, 0));
         assertTrue(invalidLimit.getMessage().contains("newMaxClicks"));
 
         assertDoesNotThrow(() -> service.followShortLink(shortLink));
-        IllegalArgumentException tooLow = assertThrows(IllegalArgumentException.class,
-            () -> service.updateMaxClicks(owner, shortLink, 1));
+        IllegalArgumentException tooLow =
+                assertThrows(IllegalArgumentException.class, () -> service.updateMaxClicks(owner, shortLink, 1));
         assertTrue(tooLow.getMessage().contains("Новый лимит меньше"));
 
         assertDoesNotThrow(() -> service.updateMaxClicks(owner, shortLink, 3));

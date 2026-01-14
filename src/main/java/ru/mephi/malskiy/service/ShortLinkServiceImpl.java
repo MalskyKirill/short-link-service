@@ -1,18 +1,16 @@
 package ru.mephi.malskiy.service;
 
-
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.*;
 import ru.mephi.malskiy.config.AppConfig;
 import ru.mephi.malskiy.model.Link;
 import ru.mephi.malskiy.model.UserLinkKey;
 import ru.mephi.malskiy.util.LinkUtil;
 
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.*;
-
-public class ShortLinkServiceImpl implements ShortLinkService{
+public class ShortLinkServiceImpl implements ShortLinkService {
     private final AppConfig config;
     private final Map<String, Link> shortLinksMap = new HashMap<>();
     private final Map<UserLinkKey, Link> userLinksMap = new HashMap<>();
@@ -27,24 +25,27 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         // берем интервал из конфига но не меньше 10 с
         long cleanupMillis = Math.max(10000L, config.getCleanupInterval().toMillis());
 
-        this.cleanupTimer.scheduleAtFixedRate(new TimerTask() { // создали задачу
-            @Override
-            public void run() { // запустили поток
-                try {
-                    deleteExpired();
-                } catch (Exception ex) {
-                    System.err.println("Не удалось выполнить очистку: " + ex.getMessage());
-                }
-            }
-        }, 0L, cleanupMillis); // задали время первого запуска и период
+        this.cleanupTimer.scheduleAtFixedRate(
+                new TimerTask() { // создали задачу
+                    @Override
+                    public void run() { // запустили поток
+                        try {
+                            deleteExpired();
+                        } catch (Exception ex) {
+                            System.err.println("Не удалось выполнить очистку: " + ex.getMessage());
+                        }
+                    }
+                },
+                0L,
+                cleanupMillis); // задали время первого запуска и период
     }
-
 
     @Override
     public synchronized String getShortLink(UUID userId, String baseLink, int maxClick) {
         // проверяем валидность переданных аргументов
         if (userId == null) throw new IllegalArgumentException("userId не должен быть null");
-        if (baseLink == null || baseLink.isBlank()) throw new IllegalArgumentException("baseLink не должен быть пустым");
+        if (baseLink == null || baseLink.isBlank())
+            throw new IllegalArgumentException("baseLink не должен быть пустым");
         if (maxClick <= 0) throw new IllegalArgumentException("maxClick должно быть больше 0");
 
         deleteExpired();
@@ -77,7 +78,6 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         userLinksMap.put(key, link);
 
         return shortLink;
-
     }
 
     @Override
@@ -110,7 +110,8 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         List<Link> userLinks = new ArrayList<>(); // создаем списочек
 
         for (Link link : shortLinksMap.values()) { // бежим по линкам в мапе
-            if (link.getUserId().equals(userId)) userLinks.add(link); // если у линки пользователь совпадает с текущем, добавляем в списочек
+            if (link.getUserId().equals(userId))
+                userLinks.add(link); // если у линки пользователь совпадает с текущем, добавляем в списочек
         }
 
         userLinks.sort(Comparator.comparing(Link::getCreatedAt).reversed()); // сортируем сначала самые свежие
@@ -167,8 +168,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         for (Link link : links) { // бежим по копии
             if (link.isExpired(now)) {
                 removeLink(link);
-                notificationService.notify(link.getUserId(),
-                    "Ссылка протухла и удалена: " + link.getShortLink());
+                notificationService.notify(link.getUserId(), "Ссылка протухла и удалена: " + link.getShortLink());
             }
         }
     }
@@ -187,15 +187,17 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         if (!link.isLimitNotified()) { // проверяем что мы еще не писали уведомление по данной ссылке
             link.setLimitNotified(true); // выставляем флаг
             // пишем уведомление пользователю
-            notificationService.notify(link.getUserId(),
-                "Лимит переходов исчерпан (" + link.getMaxClick() + "): " + link.getShortLink());
+            notificationService.notify(
+                    link.getUserId(), "Лимит переходов исчерпан (" + link.getMaxClick() + "): " + link.getShortLink());
         }
     }
 
     private String generateShortLinkCode(UUID userId, String baseLink, int salt) {
         String comp = userId + "|" + baseLink + "|" + salt; // собираем строку из 3 частей
         UUID name = UUID.nameUUIDFromBytes(comp.getBytes(StandardCharsets.UTF_8)); // создаем UUID из байтов строки
-        long mixXor = name.getMostSignificantBits() ^ name.getLeastSignificantBits(); // делаем xor со старшими 64 билами UUID и 64 младшими битами
+        long mixXor = name.getMostSignificantBits()
+                ^ name.getLeastSignificantBits(); // делаем xor со старшими 64 билами UUID и 64 младшими
+        // битами
 
         String base62 = LinkUtil.toBase62(mixXor); // переводим число в кодировку base62
 
@@ -207,7 +209,9 @@ public class ShortLinkServiceImpl implements ShortLinkService{
     private void validateUrl(String url) {
         try {
             URI uri = new URI(url);
-            if (uri.getScheme() == null || (!uri.getScheme().equalsIgnoreCase("http") && !uri.getScheme().equalsIgnoreCase("https"))) {
+            if (uri.getScheme() == null
+                    || (!uri.getScheme().equalsIgnoreCase("http")
+                            && !uri.getScheme().equalsIgnoreCase("https"))) {
                 throw new IllegalArgumentException("URL должен начинаться с http:// или https://");
             }
             if (uri.getHost() == null) {
@@ -218,4 +222,3 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         }
     }
 }
-

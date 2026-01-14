@@ -8,7 +8,7 @@ public class LinkUtil {
     // основание системы счисления base62
     private static final BigInteger BASE = BigInteger.valueOf(ALPHABET.length());
 
-    public static String toBase62 (long value) {
+    public static String toBase62(long value) {
         if (value == 0) return "a"; // если пришел 0 возвращаем "a"
 
         BigInteger copyValue = BigInteger.valueOf(value).abs(); // создаем копию входного значения и берем его по модулю
@@ -22,6 +22,7 @@ public class LinkUtil {
             copyValue = divRem[0]; // присваеваем copyValue значение частного
         }
 
-        return code.reverse().toString(); // делаем реверc так ка собирали в обратном порядке, переводим в строку и возвращаем
+        return code.reverse().toString(); // делаем реверc так ка собирали в обратном порядке, переводим в строку и
+        // возвращаем
     }
 }

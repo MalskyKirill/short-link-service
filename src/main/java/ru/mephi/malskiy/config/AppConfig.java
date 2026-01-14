@@ -1,10 +1,10 @@
 package ru.mephi.malskiy.config;
 
+import static java.lang.Long.parseLong;
+
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Properties;
-
-import static java.lang.Long.parseLong;
 
 public class AppConfig {
     private final String domain;
@@ -38,7 +38,7 @@ public class AppConfig {
     public static AppConfig load() {
         Properties prop = new Properties();
 
-        try (InputStream read = AppConfig.class.getClassLoader().getResourceAsStream("application.properties")){
+        try (InputStream read = AppConfig.class.getClassLoader().getResourceAsStream("application.properties")) {
             prop.load(read);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

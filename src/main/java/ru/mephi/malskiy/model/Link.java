@@ -18,7 +18,13 @@ public class Link {
 
     private boolean limitNotified = false;
 
-    public Link(UUID userId, String shortLink, String baseLink, LocalDateTime createdAt, LocalDateTime expiresAt, int maxClick) {
+    public Link(
+            UUID userId,
+            String shortLink,
+            String baseLink,
+            LocalDateTime createdAt,
+            LocalDateTime expiresAt,
+            int maxClick) {
         this.userId = userId;
         this.shortLink = shortLink;
         this.baseLink = baseLink;
@@ -77,15 +83,25 @@ public class Link {
 
     @Override
     public String toString() {
-        return "Link{" +
-            "userId=" + userId +
-            ", shortLink='" + shortLink + '\'' +
-            ", baseLink='" + baseLink + '\'' +
-            ", createdAt=" + createdAt +
-            ", expiresAt=" + expiresAt +
-            ", maxClick=" + maxClick +
-            ", clicks=" + clicks +
-            ", limitNotified=" + limitNotified +
-            '}';
+        return "Link{"
+                + "userId="
+                + userId
+                + ", shortLink='"
+                + shortLink
+                + '\''
+                + ", baseLink='"
+                + baseLink
+                + '\''
+                + ", createdAt="
+                + createdAt
+                + ", expiresAt="
+                + expiresAt
+                + ", maxClick="
+                + maxClick
+                + ", clicks="
+                + clicks
+                + ", limitNotified="
+                + limitNotified
+                + '}';
     }
 }

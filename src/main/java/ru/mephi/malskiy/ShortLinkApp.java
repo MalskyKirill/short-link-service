@@ -1,15 +1,13 @@
 package ru.mephi.malskiy;
 
-import ru.mephi.malskiy.config.AppConfig;
-import ru.mephi.malskiy.model.Link;
-import ru.mephi.malskiy.service.*;
-
-
 import java.awt.Desktop;
 import java.net.URI;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import ru.mephi.malskiy.config.AppConfig;
+import ru.mephi.malskiy.model.Link;
+import ru.mephi.malskiy.service.*;
 
 public class ShortLinkApp {
     public static void main(String[] args) {
@@ -25,7 +23,8 @@ public class ShortLinkApp {
         while (true) {
             System.out.println();
             System.out.println("Выберите действие:");
-            System.out.print("""
+            System.out.print(
+                    """
                     1) Создать короткую ссылку
                     2) Перейти по короткой ссылке
                     3) Показать уведомления
@@ -53,9 +52,8 @@ public class ShortLinkApp {
 
                         System.out.print("Введите лимит переходов (Enter для " + config.getDefaultMaxClick() + "): ");
                         String maxClickRaw = scanner.nextLine().trim();
-                        int maxClick = maxClickRaw.isEmpty()
-                            ? config.getDefaultMaxClick()
-                            : Integer.parseInt(maxClickRaw);
+                        int maxClick =
+                                maxClickRaw.isEmpty() ? config.getDefaultMaxClick() : Integer.parseInt(maxClickRaw);
 
                         String shortUrl = shortLinkService.getShortLink(userId, baseUrl, maxClick);
                         System.out.println("Короткая ссылка: " + shortUrl);

@@ -1,15 +1,14 @@
 package ru.mephi.malskiy.service;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import ru.mephi.malskiy.config.AppConfig;
-import ru.mephi.malskiy.model.Link;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import ru.mephi.malskiy.config.AppConfig;
+import ru.mephi.malskiy.model.Link;
 
 class ShortLinkServiceImplIntegrationTest {
     private ShortLinkServiceImpl service;
@@ -25,9 +24,8 @@ class ShortLinkServiceImplIntegrationTest {
     @Test
     void expiresLinksByTtlAndNotifies() throws InterruptedException {
         notificationService = new NotificationServiceImpl();
-        service = new ShortLinkServiceImpl(new AppConfig(
-            "clck.ru/", Duration.ofMillis(5), 10, Duration.ofSeconds(60)), notificationService
-        );
+        service = new ShortLinkServiceImpl(
+                new AppConfig("clck.ru/", Duration.ofMillis(5), 10, Duration.ofSeconds(60)), notificationService);
 
         UUID userId = UUID.randomUUID();
         String shortLink = service.getShortLink(userId, "https://example.com", 2);
@@ -46,8 +44,8 @@ class ShortLinkServiceImplIntegrationTest {
     @Test
     void scenarioCreateFollowLimitAndList() {
         notificationService = new NotificationServiceImpl();
-        service = new ShortLinkServiceImpl(new AppConfig("clck.ru/", Duration.ofMinutes(5), 10, Duration.ofSeconds(60)),
-            notificationService);
+        service = new ShortLinkServiceImpl(
+                new AppConfig("clck.ru/", Duration.ofMinutes(5), 10, Duration.ofSeconds(60)), notificationService);
 
         UUID userId = UUID.randomUUID();
         String shortLink = service.getShortLink(userId, "https://www.baeldung.com/java-9-http-client", 2);

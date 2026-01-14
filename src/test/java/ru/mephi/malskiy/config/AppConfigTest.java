@@ -1,10 +1,8 @@
 package ru.mephi.malskiy.config;
 
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
 
 class AppConfigTest {
     @Test
