@@ -133,6 +133,7 @@ public class ShortLinkApp {
                     }
                     case "0" -> {
                         System.out.println("Завершаем работу приложения.");
+                        shortLinkService.shutdown();
                         return;
                     }
                     default -> System.out.println("Неизвестная команда.");
@@ -140,9 +141,6 @@ public class ShortLinkApp {
 
             } catch (Exception e) {
                 System.out.println("Ошибка: " + e.getMessage());
-            }
-            finally {
-                shortLinkService.shutdown();
             }
         }
     }

@@ -36,7 +36,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
                     System.err.println("Не удалось выполнить очистку: " + ex.getMessage());
                 }
             }
-        }, cleanupMillis, cleanupMillis); // задали время первого запуска и период
+        }, 0L, cleanupMillis); // задали время первого запуска и период
     }
 
 
@@ -199,7 +199,7 @@ public class ShortLinkServiceImpl implements ShortLinkService{
 
         String base62 = LinkUtil.toBase62(mixXor); // переводим число в кодировку base62
 
-        if (base62.length() > 8) base62.substring(0, 8); // если код длиннее 8 символов обрезаем
+        if (base62.length() > 8) base62 = base62.substring(0, 8); // если код длиннее 8 символов обрезаем
 
         return base62;
     }
@@ -218,3 +218,4 @@ public class ShortLinkServiceImpl implements ShortLinkService{
         }
     }
 }
+
